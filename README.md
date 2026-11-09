@@ -1,3 +1,1 @@
-# Personal Development Environment
-
-Головоломка Эйнштейна
+# Головоломка Эйнштейна
