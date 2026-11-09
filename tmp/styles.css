@@ -1,0 +1,66 @@
+body {
+    margin: 0;
+}
+
+p {
+    margin: 0;	/* убирает встроенные в браузер отступы для абзацев и заголовков*/
+}
+
+.page {
+    width: min(100% - 40px, 1200px);
+    margin-inline: auto;
+	background-color: gray;
+}
+
+.game-layout {
+    display: grid;
+    grid-template-columns: minmax(350px, 600px) 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 600px) {
+
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .column-clues {
+        grid-column: auto;
+    }
+}
+
+.game-board {
+    display: grid;
+    grid-template-columns: minmax(30px, 80px) minmax(30px, 80px) minmax(30px, 80px) minmax(30px, 80px) minmax(30px, 80px);
+
+	aspect-ratio: 1 / 1;
+    gap: 20px;
+    padding: 20px;
+	background-color: yellow;
+}
+
+.line_5_blocks {
+	
+}
+
+.block_element {
+	aspect-ratio: 1 / 1;
+    padding: 10px;
+    background-color: #fbffec;
+    border: 1px solid gray;
+	
+}
+
+.row-clues {
+	background-color: lightyellow;
+    gap: 20px;
+    padding: 20px;
+}
+
+.column-clues {
+	background-color: lightyellow;
+	grid-column: 1 / -1;
+    gap: 20px;
+    padding: 20px;
+}
+
