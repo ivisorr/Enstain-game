@@ -1,0 +1,26 @@
+name: Tests
+
+# Запускает проверки после отправки коммитов в main.
+on:
+  push:
+    branches: [main]
+
+# Для проверки достаточно доступа к коду на чтение.
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Получить код проекта
+        uses: actions/checkout@v7
+
+      - name: Подготовить Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '26.13.1'
+          package-manager-cache: false
+
+      - name: Запустить тесты
+        run: node --test
