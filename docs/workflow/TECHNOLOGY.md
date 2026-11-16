@@ -23,3 +23,9 @@ Frontend-веб-игра со структурой, учитывающей бу�
 - Доступность Codex дома после установки.
 
 Репозиторий публичный: пароли и токены здесь не хранить.
+
+## Подтверждено 2026-11-16
+- Код движка: JavaScript, ES-модули. На работе установлены Node.js 26.13.1 и npm.cmd 11.20.0; домашние версии ещё проверить.
+- PowerShell блокирует npm.ps1; используем npm.cmd без изменения ExecutionPolicy.
+- Тесты: встроенные node:test и node:assert/strict, tests/*.test.mjs, команда node --test. Пять проверок проходят локально.
+- CI: .github/workflows/tests.yml, push в main, ubuntu-latest, Node.js 26.13.1, checkout@v7/setup-node@v7. Первый удалённый результат ещё не проверен. CD отложен.
