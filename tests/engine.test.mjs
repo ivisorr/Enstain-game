@@ -5,7 +5,74 @@ import {
   endGame,
   getElements,
   getVisibleElements,
+  getClues,
 } from "../src/js/engine.js";
+
+// Вспомогательные функции для тестов.
+
+// Создаёт словарь позиций ID по переданной матрице.
+function fillPositionById(sourceMatrix) {
+  const positionsById = {};
+
+  sourceMatrix.forEach((row, rowIndex) => {
+    row.forEach((elementId, colIndex) => {
+      positionsById[elementId] = { rowIndex, colIndex };
+    });
+  });
+
+  return positionsById;
+}
+
+// Проверяет подсказку по позициям элементов открытого поля.
+function checkClue(clue, positionsById) {
+
+  if (clue.type === "given") {
+    return positionsById[clue.element].colIndex === clue.colIndex;
+  }
+
+  if (clue.type === "sameColumn") {
+    const topPosition = positionsById[clue.top];
+    const bottomPosition = positionsById[clue.bottom];
+
+    return (
+      topPosition.colIndex === bottomPosition.colIndex &&
+      topPosition.rowIndex < bottomPosition.rowIndex
+    );
+  }
+
+  if (clue.type === "leftOf") {
+    const leftPosition = positionsById[clue.left];
+    const rightPosition = positionsById[clue.right];
+
+    return (
+      leftPosition.colIndex < rightPosition.colIndex
+    );
+  }
+
+  if (clue.type === "near") {
+    const side1Position = positionsById[clue.side1];
+    const side2Position = positionsById[clue.side2];
+
+    return (
+      Math.abs(side1Position.colIndex - side2Position.colIndex) === 1
+    );
+  }
+
+  if (clue.type === "between") {
+    const side1Position = positionsById[clue.side1];
+    const middlePosition = positionsById[clue.middle];
+    const side2Position = positionsById[clue.side2];
+
+    return (
+      Math.abs(side1Position.colIndex - middlePosition.colIndex) === 1 &&
+      Math.abs(side2Position.colIndex - middlePosition.colIndex) === 1 &&
+      Math.abs(side1Position.colIndex - side2Position.colIndex) === 2
+    );
+
+  }
+
+  return false;
+}
 
 // Проверяет соответствие размеров открытого поля и постоянного каталога.
 test("Размеры открытого поля соответствуют каталогу", () => {
@@ -78,4 +145,21 @@ test("Новая игра сбрасывает открытое поле", () =>
   startGame();
 
   assert.deepEqual(getVisibleElements(),[]);
+});
+
+// Проверяет соответствие выданных подсказок открытому ответу.
+test("Выданные подсказки соответствуют открытому ответу", () => {
+  startGame();
+  endGame();
+
+  const solutionPositionByID = fillPositionById( getVisibleElements() );
+  const clues = getClues();
+
+  clues.forEach((clue) => {
+    assert.ok(checkClue(clue, solutionPositionByID),
+    `Подсказка для элемента ${clue.element}
+    не соответствует позиции в открытом поле`);
+  });
+
+  // assert.deepEqual(getVisibleElements(),[]);
 });

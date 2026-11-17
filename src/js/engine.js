@@ -1,10 +1,3 @@
-// Учебная подсказка: [2] находится левее [A].
-const testClue = {
-  type: "leftOf",
-  left: "number-2",
-  right: "letter-a",
-};
-
 // Постоянные ID элементов поля 3 × 3; порядок наборов не меняется.
 const elements = [
   ["number-1", "number-2", "number-3"],
@@ -23,6 +16,18 @@ const answerPositionById = {};
 
 // Видимые элементы игрового поля; скрытый ответ хранится отдельно.
 const visibleElements = [];
+
+// Доступные кандидаты подсказок, сгруппированные по типам.
+const clueCandidates = {
+  given: [],
+  sameColumn: [],
+  leftOf: [],
+  near: [],
+  between: [],
+};
+
+// Выбранные подсказки текущей головоломки.
+const cluesSelected = [];
 
 
 
@@ -79,57 +84,43 @@ function setAllVisibleElements() {
   });
 }
 
-// Проверяет, выполняется ли подсказка в скрытом ответе; ID должны существовать.
-function checkClue(clue) {
+// Формирует кандидатов подсказок по сгенерированному ответу; пока только given.
+function generateClueCandidates() {
+   // Сбрасывает массивы всех подсказок.
+  Object.values(clueCandidates).forEach((group) => {
+    group.length = 0;
+  });
 
-  if (clue.type === "given") {
-    return answerPositionById[clue.element].colIndex === clue.columnIndex;
-  }
+  // Генерация подсказок для каждого элемента в сгенерированном ответе.
+  elements.forEach((row) => {
+    row.forEach((elementId) => {
 
-  if (clue.type === "sameColumn") {
-    const topPosition = answerPositionById[clue.top];
-    const bottomPosition = answerPositionById[clue.bottom];
+      // Кандидат открытия элемента в колонке скрытого ответа.
+      const clue = {
+        type: "given",
+        element: elementId,
+        colIndex: answerPositionById[elementId].colIndex
+      };
+      clueCandidates.given.push(clue);
 
-    return (
-      topPosition.colIndex === bottomPosition.colIndex &&
-      topPosition.rowIndex < bottomPosition.rowIndex
-    );
-  }
-
-  if (clue.type === "leftOf") {
-    const leftPosition = answerPositionById[clue.left];
-    const rightPosition = answerPositionById[clue.right];
-
-    return (
-      leftPosition.colIndex < rightPosition.colIndex
-    );
-  }
-
-  if (clue.type === "near") {
-    const side1Position = answerPositionById[clue.side1];
-    const side2Position = answerPositionById[clue.side2];
-
-    return (
-      Math.abs(side1Position.colIndex - side2Position.colIndex) === 1
-    );
-  }
-
-  if (clue.type === "between") {
-    const side1Position = answerPositionById[clue.side1];
-    const middlePosition = answerPositionById[clue.middle];
-    const side2Position = answerPositionById[clue.side2];
-
-    return (
-      Math.abs(side1Position.colIndex - middlePosition.colIndex) === 1 &&
-      Math.abs(side2Position.colIndex - middlePosition.colIndex) === 1 &&
-      Math.abs(side1Position.colIndex - side2Position.colIndex) === 2
-    );
-
-  }
-
-  return false;
+    });
+  });
 }
-// Публичные функции движка для слоя 2.
+
+// Временно копирует всех кандидатов в выбранные подсказки для проверки генерации.
+function selectClues() {
+  cluesSelected.length = 0;
+
+  Object.values(clueCandidates).forEach((group) => {
+    group.forEach((clue) => {
+      cluesSelected.push({ ...clue });
+    });
+  });
+}
+
+
+
+// Публичные функции движка.
 
 // Сбрасывает видимое поле и генерирует ответ для новой игры.
 export function startGame() {
@@ -137,6 +128,8 @@ export function startGame() {
 
   generateRandomAnswer(); // Распределяет элементы каждой строки по случайным свободным колонкам.
   fillAnswerPositionById(); // Заполняет словарь координат элементов из сгенерированного ответа.
+  generateClueCandidates(); // Формирует кандидатов по новому ответу.
+  selectClues(); // Выбирает подсказки для отображения.
 }
 
 // Возвращает копию постоянного каталога элементов.
@@ -148,6 +141,12 @@ export function getElements() {
 export function getVisibleElements() {
   return visibleElements.map((row) => [...row]);
 }
+
+// Возвращает выбранные подсказки для отображения.
+export function getClues() {
+  return cluesSelected.map((clue) => ({...clue}));
+}
+
 
 // Открывает правильный ответ при завершении игры.
 export function endGame() {

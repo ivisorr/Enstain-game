@@ -29,3 +29,5 @@ Frontend-веб-игра со структурой, учитывающей бу�
 - PowerShell блокирует npm.ps1; используем npm.cmd без изменения ExecutionPolicy.
 - Тесты: встроенные node:test и node:assert/strict, tests/*.test.mjs, команда node --test. Пять проверок проходят локально.
 - CI: .github/workflows/tests.yml, push в main, ubuntu-latest, Node.js 26.13.1, checkout@v7/setup-node@v7. Первый удалённый результат ещё не проверен. CD отложен.
+## Проверено пользователем 2026-11-17
+CI запущен на GitHub и завершился успешно. Workflow поддерживает push в main и ручной workflow_dispatch. Новые незакоммиченные изменения пока проверены только локально: 6 тестов. Среда дома по-прежнему требует уточнения версий.
