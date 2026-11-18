@@ -36,7 +36,7 @@ function checkClue(clue, positionsById) {
 
     return (
       topPosition.colIndex === bottomPosition.colIndex &&
-      topPosition.rowIndex < bottomPosition.rowIndex
+      topPosition.rowIndex !== bottomPosition.rowIndex
     );
   }
 
@@ -75,7 +75,7 @@ function checkClue(clue, positionsById) {
 }
 
 // Проверяет соответствие размеров открытого поля и постоянного каталога.
-test("Размеры открытого поля соответствуют каталогу", () => {
+test("Размеры открытого поля getVisibleElements() соответствуют каталогу getElements()", () => {
   startGame();
   endGame();
 
@@ -108,7 +108,7 @@ test("Состав строк открытого поля соответству
 });
 
 // Проверяет, что изменение копии каталога не меняет данные движка.
-test("getElements возвращает независимую копию каталога", () => {
+test("getElements() возвращает независимую копию каталога", () => {
   startGame();
   endGame();
 
@@ -135,8 +135,8 @@ test("getVisibleElements возвращает независимую копию 
   assert.equal(visibleElementsNew[1][1], originalId);
 });
 
-// Проверяет, что новая игра сбрасывает ранее открытое поле.
-test("Новая игра сбрасывает открытое поле", () => {
+// Проверяет, что новая игра сбрасывает ранее открытое поле .
+test("Новая игра сбрасывает открытое поле getVisibleElements()", () => {
   startGame();
   endGame();
 
@@ -148,7 +148,7 @@ test("Новая игра сбрасывает открытое поле", () =>
 });
 
 // Проверяет соответствие выданных подсказок открытому ответу.
-test("Выданные подсказки соответствуют открытому ответу", () => {
+test("Выданные getClues() подсказки соответствуют открытому ответу", () => {
   startGame();
   endGame();
 
@@ -156,10 +156,68 @@ test("Выданные подсказки соответствуют откры�
   const clues = getClues();
 
   clues.forEach((clue) => {
-    assert.ok(checkClue(clue, solutionPositionByID),
-    `Подсказка для элемента ${clue.element}
-    не соответствует позиции в открытом поле`);
+    assert.ok(checkClue(clue, solutionPositionByID), `Подсказка для элемента ${clue.element} не соответствует позиции в открытом поле`);
   });
 
-  // assert.deepEqual(getVisibleElements(),[]);
+});
+
+// Проверяет независимость массива подсказок и его объектов.
+  test("getClues() возвращает независимую копию подсказок", () => {
+  startGame();
+
+  const originalClues = getClues();
+  const originalLength = originalClues.length;
+  assert.ok(originalLength > 0, "Подсказки не были сгенерированы");
+
+  const originalClueType = originalClues[0].type;
+  originalClues[0].type = "test";
+  originalClues.pop();
+
+  const newClues = getClues();
+
+  assert.equal(newClues[0].type, originalClueType, "Изменение объекта в копии затронуло подсказку внутри движка");
+  assert.equal(newClues.length, originalLength, "Удаление из копии изменило количество подсказок внутри движка");
+
+});
+
+// Проверяет отсутствие повторных идентификаторов в выбранных подсказках.
+test("getClues() Идентификаторы подсказок не повторяются", () => {
+  startGame();
+
+  const clues = getClues();
+  const seenIds = new Set();
+
+  clues.forEach((clue) => {
+    assert.ok(!seenIds.has(clue.id), "Повторный ID: " + clue.id);
+    seenIds.add(clue.id);
+  });
+
+});
+
+// Проверяет идентификаторы выданных подсказок.
+test("getClues() Идентификаторы подсказок соответствуют их содержимому", () => {
+  startGame();
+  const elementPositionById = fillPositionById(getElements());
+  const clues = getClues();
+
+  clues.forEach((clue) => {
+
+    if (clue.type === "given") {
+      assert.equal(clue.id, clue.type+":" + clue.element + ":" + clue.colIndex);
+
+    } else if (clue.type === "sameColumn") {
+      const topIsEarlier =
+        elementPositionById[clue.top].rowIndex <
+        elementPositionById[clue.bottom].rowIndex;
+      assert.equal( clue.id, clue.type + ":"
+        + (topIsEarlier ? clue.top : clue.bottom) + ":"
+        + (topIsEarlier ? clue.bottom : clue.top)
+      );
+
+   } else if (clue.type === "leftOf") {
+      assert.equal(clue.id, clue.type+":" + clue.left + ":" + clue.right);
+
+    } else assert.fail("Неизвестный тип подсказки: " + clue.type);
+  });
+
 });

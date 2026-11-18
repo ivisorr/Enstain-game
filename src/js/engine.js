@@ -84,7 +84,7 @@ function setAllVisibleElements() {
   });
 }
 
-// Формирует кандидатов подсказок по сгенерированному ответу; пока только given.
+// Формирует кандидатов given, sameColumn и leftOf по сгенерированному ответу.
 function generateClueCandidates() {
    // Сбрасывает массивы всех подсказок.
   Object.values(clueCandidates).forEach((group) => {
@@ -95,13 +95,44 @@ function generateClueCandidates() {
   elements.forEach((row) => {
     row.forEach((elementId) => {
 
-      // Кандидат открытия элемента в колонке скрытого ответа.
+      const colIndex = answerPositionById[elementId].colIndex;
+      const rowIndex = answerPositionById[elementId].rowIndex;
+
+      // Кандидат given: открытый элемент в указанной колонке.
       const clue = {
         type: "given",
         element: elementId,
-        colIndex: answerPositionById[elementId].colIndex
+        colIndex,
+        id: "given:" + elementId + ":" + colIndex,
       };
       clueCandidates.given.push(clue);
+
+      // sameColumn кандидаты - элементы в том же столбце.
+      for (  let bottomRowIndex = rowIndex + 1; bottomRowIndex < answer.length;  bottomRowIndex++)
+      {
+        const bottomElementId = answer[bottomRowIndex][colIndex];
+        const clue = {
+          type: "sameColumn",
+          top: elementId,
+          bottom: bottomElementId,
+          id: "sameColumn:" + elementId + ":" + bottomElementId,
+        };
+        clueCandidates.sameColumn.push(clue);
+      }
+
+      // Кандидаты leftOf: элементы в колонках правее текущей, не обязательно соседних.
+      for (  let rowIndexRight = 0; rowIndexRight < answer.length;  rowIndexRight++) {
+        for (  let colIndexRight = colIndex + 1; colIndexRight < row.length;  colIndexRight++) {
+          const elementIdRight = answer[rowIndexRight][colIndexRight];
+          const clue = {
+            type: "leftOf",
+            left: elementId,
+            right: elementIdRight,
+            id: "leftOf:" + elementId + ":" + elementIdRight,
+          };
+          clueCandidates.leftOf.push(clue);
+        }
+      }
 
     });
   });
