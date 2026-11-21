@@ -14,6 +14,19 @@ Enstain-game/                    # Корень проекта
 ├── .github/                    # Настройки GitHub
 │   └── workflows/              # Автоматические процессы GitHub Actions
 │       └── tests.yml           # Запуск тестов после push в main
+├── assistant-workbench/        # Черновик переносимого AI-помощника и его правил
+│   ├── README.md               # Устройство и назначение workbench
+│   ├── AGENTS.md               # Общее подтверждённое ядро и правила работы с черновиком
+│   ├── CONTEXT.md              # Краткое состояние разработки помощника
+│   ├── HANDOFF.md              # Точка продолжения обсуждения помощника
+│   ├── TASKS.md                # Идеи, вопросы и задачи помощника
+│   ├── HISTORY.md              # История решений и сессий по помощнику
+│   └── skills/                 # Рабочие модули; включение задаётся в профиле проекта
+│       ├── feature-development.md # Кандидат/модуль согласования и реализации функций
+│       ├── learning.md         # Кандидат/модуль обучения
+│       ├── testing-review.md   # Кандидат/модуль тестирования и проверки
+│       ├── project-context.md  # Кандидат для работы с контекстом проектов
+│       └── public-data-review.md # Кандидат для проверки публичных материалов
 ├── Note.txt                    # Личный рабочий буфер пользователя
 ├── src/                        # Исходный код приложения
 │   └── js/                     # JavaScript движка и будущего интерфейса
@@ -45,7 +58,7 @@ Enstain-game/                    # Корень проекта
 ## Навигация и запуск
 
 - [Правила игры](docs/project/GAME_RULES.md) и [архитектура](docs/project/ARCHITECTURE.md).
-- [Задачи](docs/workflow/TASKS.md) и [организация работы](docs/workflow/WORKFLOW.md).
+- [Задачи игры](docs/workflow/TASKS.md), [организация работы](docs/workflow/WORKFLOW.md) и [Assistant Workbench](assistant-workbench/README.md) с отдельными заметками о помощнике.
 - [Краткий контекст AI](docs/ai/CONTEXT.md) и [продолжение обсуждения](docs/ai/HANDOFF.md).
 - [Исходник движка](src/js/engine.js).
 
