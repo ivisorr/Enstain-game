@@ -84,7 +84,7 @@ function setAllVisibleElements() {
   });
 }
 
-// Формирует кандидатов given, sameColumn и leftOf по сгенерированному ответу.
+// Формирует кандидатов given, sameColumn, leftOf и near по сгенерированному ответу.
 function generateClueCandidates() {
    // Сбрасывает массивы всех подсказок.
   Object.values(clueCandidates).forEach((group) => {
@@ -107,30 +107,70 @@ function generateClueCandidates() {
       };
       clueCandidates.given.push(clue);
 
-      // sameColumn кандидаты - элементы в том же столбце.
-      for (  let bottomRowIndex = rowIndex + 1; bottomRowIndex < answer.length;  bottomRowIndex++)
+      // Кандидаты sameColumn: элементы в том же столбце.
+      for (let bottomRowIndex = rowIndex + 1; bottomRowIndex < answer.length;  bottomRowIndex++)
       {
         const bottomElementId = answer[bottomRowIndex][colIndex];
+
         const clue = {
           type: "sameColumn",
           top: elementId,
           bottom: bottomElementId,
           id: "sameColumn:" + elementId + ":" + bottomElementId,
         };
+
         clueCandidates.sameColumn.push(clue);
       }
 
       // Кандидаты leftOf: элементы в колонках правее текущей, не обязательно соседних.
-      for (  let rowIndexRight = 0; rowIndexRight < answer.length;  rowIndexRight++) {
+      for (let rowIndexRight = 0; rowIndexRight < answer.length;  rowIndexRight++) {
         for (  let colIndexRight = colIndex + 1; colIndexRight < row.length;  colIndexRight++) {
           const elementIdRight = answer[rowIndexRight][colIndexRight];
+
           const clue = {
             type: "leftOf",
             left: elementId,
             right: elementIdRight,
             id: "leftOf:" + elementId + ":" + elementIdRight,
           };
+
           clueCandidates.leftOf.push(clue);
+        }
+      }
+
+      // Кандидаты near: элементы соседних колонок без зеркальных дублей.
+      const elementCatalogPosition = elementPositionById[elementId];
+      for (const neighborColIndex of [colIndex - 1, colIndex + 1]) {
+        // За границами поля соседней колонки нет.
+        if (neighborColIndex < 0 || neighborColIndex >= row.length) {
+          continue;
+        }
+
+        for (let neighborRowIndex = 0; neighborRowIndex < answer.length; neighborRowIndex++) {
+          const neighborId = answer[neighborRowIndex][neighborColIndex];
+          const neighborCatalogPosition = elementPositionById[neighborId];
+
+          // Создаём пару, если в каталоге строка соседа с большим индексом,
+          // либо строки равны, но колонка соседа с большим индексом.
+          const currentIsEarlier =
+            elementCatalogPosition.rowIndex < neighborCatalogPosition.rowIndex ||
+            (
+              elementCatalogPosition.rowIndex === neighborCatalogPosition.rowIndex &&
+              elementCatalogPosition.colIndex < neighborCatalogPosition.colIndex
+            );
+
+          if (!currentIsEarlier) {
+            continue;
+          }
+
+          const clue = {
+            type: "near",
+            side1: elementId,
+            side2: neighborId,
+            id: "near:" + elementId + ":" + neighborId,
+          };
+
+          clueCandidates.near.push(clue);
         }
       }
 

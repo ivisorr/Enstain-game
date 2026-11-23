@@ -152,17 +152,20 @@ test("Выданные getClues() подсказки соответствуют 
   startGame();
   endGame();
 
-  const solutionPositionByID = fillPositionById( getVisibleElements() );
+  const solutionPositionByID = fillPositionById(getVisibleElements());
   const clues = getClues();
 
   clues.forEach((clue) => {
-    assert.ok(checkClue(clue, solutionPositionByID), `Подсказка для элемента ${clue.element} не соответствует позиции в открытом поле`);
+    assert.ok(
+      checkClue(clue, solutionPositionByID),
+      `Подсказка ${clue.id} не соответствует открытому ответу`,
+    );
   });
 
 });
 
 // Проверяет независимость массива подсказок и его объектов.
-  test("getClues() возвращает независимую копию подсказок", () => {
+test("getClues() возвращает независимую копию подсказок", () => {
   startGame();
 
   const originalClues = getClues();
@@ -203,21 +206,43 @@ test("getClues() Идентификаторы подсказок соответ�
   clues.forEach((clue) => {
 
     if (clue.type === "given") {
-      assert.equal(clue.id, clue.type+":" + clue.element + ":" + clue.colIndex);
+      assert.equal(clue.id, clue.type + ":" + clue.element + ":" + clue.colIndex);
 
     } else if (clue.type === "sameColumn") {
       const topIsEarlier =
         elementPositionById[clue.top].rowIndex <
         elementPositionById[clue.bottom].rowIndex;
-      assert.equal( clue.id, clue.type + ":"
-        + (topIsEarlier ? clue.top : clue.bottom) + ":"
-        + (topIsEarlier ? clue.bottom : clue.top)
+      assert.equal(
+        clue.id,
+        clue.type + ":" +
+        (topIsEarlier ? clue.top : clue.bottom) + ":" +
+        (topIsEarlier ? clue.bottom : clue.top),
       );
 
-   } else if (clue.type === "leftOf") {
-      assert.equal(clue.id, clue.type+":" + clue.left + ":" + clue.right);
+    } else if (clue.type === "leftOf") {
+      assert.equal(clue.id, clue.type + ":" + clue.left + ":" + clue.right);
 
-    } else assert.fail("Неизвестный тип подсказки: " + clue.type);
+    } else if (clue.type === "near") {
+      const firstPosition = elementPositionById[clue.side1];
+      const secondPosition = elementPositionById[clue.side2];
+
+      const firstIsEarlier =
+        firstPosition.rowIndex < secondPosition.rowIndex ||
+        (
+          firstPosition.rowIndex === secondPosition.rowIndex &&
+          firstPosition.colIndex < secondPosition.colIndex
+        );
+
+      assert.equal(
+        clue.id,
+        clue.type + ":" +
+        (firstIsEarlier ? clue.side1 : clue.side2) + ":" +
+        (firstIsEarlier ? clue.side2 : clue.side1),
+      );
+
+    } else {
+      assert.fail("Неизвестный тип подсказки: " + clue.type);
+    }
   });
 
 });
