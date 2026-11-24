@@ -31,12 +31,12 @@ function checkClue(clue, positionsById) {
   }
 
   if (clue.type === "sameColumn") {
-    const topPosition = positionsById[clue.top];
-    const bottomPosition = positionsById[clue.bottom];
+    const side1Position = positionsById[clue.side1];
+    const side2Position = positionsById[clue.side2];
 
     return (
-      topPosition.colIndex === bottomPosition.colIndex &&
-      topPosition.rowIndex !== bottomPosition.rowIndex
+      side1Position.colIndex === side2Position.colIndex &&
+      side1Position.rowIndex !== side2Position.rowIndex
     );
   }
 
@@ -197,6 +197,49 @@ test("getClues() Идентификаторы подсказок не повто
 
 });
 
+// Проверяет наличие обоих порядков сторон в полном наборе кандидатов.
+// Перед переходом к минимальному набору условия этой статистической проверки пересмотреть.
+test("randomizeClueParticipants() Случайный обмен создаёт оба порядка участников", () => {
+  startGame();
+
+  const catalogPositions = fillPositionById(getElements());
+  const clues = getClues();
+
+  let symmetricCount = 0;
+  let swappedCount = 0;
+
+  clues.forEach((clue) => {
+    if (
+      clue.type !== "sameColumn" &&
+      clue.type !== "near" &&
+      clue.type !== "between"
+    ) {
+      return;
+    }
+
+    symmetricCount++;
+
+    const firstPosition = catalogPositions[clue.side1];
+    const secondPosition = catalogPositions[clue.side2];
+
+    const firstIsEarlier =
+      firstPosition.rowIndex < secondPosition.rowIndex ||
+      (
+        firstPosition.rowIndex === secondPosition.rowIndex &&
+        firstPosition.colIndex < secondPosition.colIndex
+      );
+
+    if (!firstIsEarlier) {
+      swappedCount++;
+    }
+  });
+
+  assert.ok(symmetricCount > 1, "Недостаточно симметричных подсказок");
+  assert.ok(swappedCount > 0, "Ни одна подсказка не перевёрнута");
+  assert.ok(swappedCount < symmetricCount, "Перевёрнуты все симметричные подсказки",
+  );
+});
+
 // Проверяет идентификаторы выданных подсказок.
 test("getClues() Идентификаторы подсказок соответствуют их содержимому", () => {
   startGame();
@@ -209,14 +252,14 @@ test("getClues() Идентификаторы подсказок соответ�
       assert.equal(clue.id, clue.type + ":" + clue.element + ":" + clue.colIndex);
 
     } else if (clue.type === "sameColumn") {
-      const topIsEarlier =
-        elementPositionById[clue.top].rowIndex <
-        elementPositionById[clue.bottom].rowIndex;
+      const side1IsEarlier =
+        elementPositionById[clue.side1].rowIndex <
+        elementPositionById[clue.side2].rowIndex;
       assert.equal(
         clue.id,
         clue.type + ":" +
-        (topIsEarlier ? clue.top : clue.bottom) + ":" +
-        (topIsEarlier ? clue.bottom : clue.top),
+        (side1IsEarlier ? clue.side1 : clue.side2) + ":" +
+        (side1IsEarlier ? clue.side2 : clue.side1),
       );
 
     } else if (clue.type === "leftOf") {
@@ -232,12 +275,30 @@ test("getClues() Идентификаторы подсказок соответ�
           firstPosition.rowIndex === secondPosition.rowIndex &&
           firstPosition.colIndex < secondPosition.colIndex
         );
-
       assert.equal(
         clue.id,
         clue.type + ":" +
         (firstIsEarlier ? clue.side1 : clue.side2) + ":" +
         (firstIsEarlier ? clue.side2 : clue.side1),
+      );
+
+    } else if (clue.type === "between") {
+      const side1Position = elementPositionById[clue.side1];
+      const side2Position = elementPositionById[clue.side2];
+
+      const side1IsEarlier =
+        side1Position.rowIndex < side2Position.rowIndex ||
+        (
+          side1Position.rowIndex === side2Position.rowIndex &&
+          side1Position.colIndex < side2Position.colIndex
+        );
+
+      assert.equal(
+        clue.id,
+        clue.type + ":" +
+        (side1IsEarlier ? clue.side1 : clue.side2) + ":" +
+        clue.middle + ":" +
+        (side1IsEarlier ? clue.side2 : clue.side1),
       );
 
     } else {
