@@ -235,7 +235,7 @@ function generateClueCandidates() {
   });
 }
 
-//  копирует всех кандидатов в выбранные подсказки для проверки генерации.
+// *** копирует всех кандидатов в выбранные подсказки для проверки генерации.
 function selectAllClues() {
   cluesSelected.length = 0;
 
@@ -244,6 +244,19 @@ function selectAllClues() {
       cluesSelected.push({ ...clue });
     });
   });
+}
+
+// Создаёт независимый массив возможных колонок для каждого ID каталога.
+function createPossibleColumnsById(sourceElements) {
+  const possibleColumnsById = {};
+
+  sourceElements.forEach((row) => {
+    row.forEach((elementId) => {
+      possibleColumnsById[elementId] = row.map((_, colIndex) => colIndex);
+    });
+  });
+
+  return possibleColumnsById;
 }
 
 // Временная заглушка: завершает отбор после десяти подсказок, не проверяя решаемость.
@@ -288,6 +301,8 @@ function selectClues() {
   cluesSelected.length = 0;
 
   // selectAllClues();
+
+  let possibleColumnsById = createPossibleColumnsById(elements);
 
   while (!canSolve(cluesSelected)) {
     const clue = addRandomClue(clueCandidates);
